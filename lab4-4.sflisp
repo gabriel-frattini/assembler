@@ -1,57 +1,49 @@
 Inport	EQU	$FC
 Utport	EQU	$FB
-DelayC1	EQU	$5		;Dessa konstanter styr hur lång fördröjning Delay1s orsakar.
-DelayC2	EQU	$2		;Ändra dem eventuellt i labbet så att fördröjnigen blir rimligt lång.
+DelayC1	EQU	$5		;Dessa konstanter styr hur lÃ¥ng fÃ¶rdrÃ¶jning Delay1s orsakar.
+DelayC2	EQU	$2		;Ã„ndra dem eventuellt i labbet sÃ¥ att fÃ¶rdrÃ¶jnigen blir rimligt lÃ¥ng.
 
 	ORG	$FF
 	FCB	$20
 
 	ORG	$20
 
-Main:
-      JSR     ReadAscii
-      PSHA
-      JSR     BlinkLight
-      JSR     finally
-
-finally:
-      STA     $FB
-      JSR     Delay1s
-      PULA
-      RTS
+Main:	;JSR 	ReadAscii
+	JSR	BlinkLight
+	BRA	Main
 
 
 ReadAscii:
-  LDA   #Inport
-	ASRA
-  RTS
-  
-	
-BlinkLight:
-  TST
-  BMI Delay4s
-  JSR Delay1s
+	ANDCC 	#$00
+	LDA 	Inport
+	RORA
+	BCC 	ReadAscii
 	RTS
 
-Delay4s:
-    JSR Delay1s
-    JSR Delay1s
-    JSR Delay1s
-    JSR Delay1s
-    JMP finally
+
 
 	
-; Orsakar en fördröjning på ungefär 1s i simulatorn (vid snabb exekveringshastighet)
-; Ändrar inga register
+BlinkLight:
+	PSHA
+	LDX  	#$FF
+	STX  	Utport
+	ROLA
+	BNE	Delay1s_loop2
+	BCS	Delay1s
+	LDX 	#$00
+	STX 	Utport
+	RTS
+	
+	
+; Orsakar en fÃ¶rdrÃ¶jning pÃ¥ ungefÃ¤r 1s i simulatorn (vid snabb exekveringshastighet)
+; Ã„ndrar inga register
 Delay1s:
-	PSHA 
-  PSHX
+	PSHA
+	PSHX
 	PSHC
 	LDX	#DelayC2
-
 Delay1s_loop2:
 	LDA	#DelayC1
-
 Delay1s_loop:
 	DECA
 	BNE	Delay1s_loop
