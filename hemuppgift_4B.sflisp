@@ -1,0 +1,43 @@
+; hej här är min kod
+INPORT:         EQU     $FC
+OUTPORT:        EQU     $FB
+                ORG     $20
+
+start:          LDX     #state_vector
+                LDA     #0
+                STA     state_index
+
+main:           LDA     INPORT
+                JSR     Delay
+                LDA     A,X
+                STA     OUTPORT
+
+NextState:      LDA     state_index
+                INCA
+                STA     state_index
+                BEQ     end
+                LDA     $3
+                STA     state_index
+
+Delay:          PSHA
+                PSHC
+                LDA     $FF
+
+Delay_1:        DECA
+                BNE     Delay_1
+                PULC
+                PULA
+                RTS
+                ORG     $FF
+                FCB     start
+
+end:            CLRA
+                
+                ORG     $E0 
+state_index:    RMB     1
+state_vector:   RMB     8 
+
+                ORG     $FF
+                FCB     $20
+
+
