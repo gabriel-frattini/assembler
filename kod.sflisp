@@ -8,74 +8,72 @@ DelayC2	EQU	$2		;Ändra dem eventuellt i labbet så att fördröjnigen blir rimligt 
 			ORG		$20			;$20
 
 
-Error:		LDA		#$AB
-			STA		Utport
-			JSR		Delay1s
+Error:		  LDA		#$AB
+			      STA		Utport
+			      JSR		Delay1s
 
-Main:		LDSP	#$20
-			LDA		#$00		;Släck lampan
-			STA		Utport
+Main:		    LDSP	#$20
+			      LDA		#$00
+			      STA		Utport
 
-reset:		JSR		ReadAscii		;Anropa inläsningsrutinen
-			SUBA	#$41			; A  <--  A - $41
+reset:		JSR		ReadAscii
+			    SUBA	#$41	
 
-;Undersök att A är på ett giltigt intervall: ...
-;Om inte, skapa en loop där lampan tänds (Error: programmet ska fastna här).
-
-			BMI		Error			;För litet input
-			CMPA	#$1A
-			BPL		Error			;För stort input
+			    BMI		Error	
+			    CMPA	#$1A
+			    BPL		Error	
 ;Continue
-			LSLA				;Dubbla A
-			PSHA
-			LDX		#MorseCode
-			LDA		A,X
-			STA		Count
-			
-			PULA
 
-			INCA
-			LDA		A,X
+			    LSLA	
+			    PSHA
+			    LDX		#MorseCode
+			    LDA		A,X
+			    STA		Count
 			
-;loop... Repetera så länge som Count != 0
+			    PULA
+
+			    INCA
+			    LDA		A,X
+			
 
 CountNotZero:	JSR		BlinkLight
-			LSLA
-			DEC		Count
-			BNE		CountNotZero	;om z=0 utförs hopp till adress
+			    LSLA
+			    DEC		Count
+			    BNE		CountNotZero	;om z=0 utförs hopp till adress
 
 
-			BRA		Main
+			    BRA		Main
 
 
 ReadAscii:	LDA		Inport
-			LSRA				;logical shift right (skiftar operanden ett steg höger)
-			BCC		ReadAscii	;om c=0 utförs hopp till adress=pc+offset(testar flaggvärde) 
-			RTS				;
+			      LSRA				;logical shift right (skiftar operanden ett steg höger)
+			      BCC		ReadAscii	;om c=0 utförs hopp till adress=pc+offset(testar flaggvärde) 
+			      RTS				;
 
 	
-BlinkLight:		PSHA
-			;PSHX	det är säkrare att pusha x ifall det används någon annanstans...
-			LDX		#$FF
-			STX		Utport
-			LSLA			;logical shift left 
-			BCS		BL_4s	;om c=1 till adress=pc+offset
+BlinkLight:		
+            PSHA
+			      ;PSHX	det är säkrare att pusha x ifall det används någon annanstans...
+			      LDX		#$FF
+			      STX		Utport
+			      LSLA			;logical shift left 
+			      BCS		BL_4s	;om c=1 till adress=pc+offset
 
-BL_1s:		JSR		Delay1s
-			JMP		BL_retur
+BL_1s:		  JSR		Delay1s
+			      JMP		BL_retur
 
-BL_4s:		LDA		#$04
+BL_4s:		  LDA		#$04
 BL_decr:		JSR		Delay1s
-			DECA	
-			BNE		BL_decr	;Z=0 hopp till adress=pc+offset 
-			JMP		BL_retur 
+			      DECA	
+			      BNE		BL_decr	;Z=0 hopp till adress=pc+offset 
+			      JMP		BL_retur 
 
 BL_retur:		LDX		#00
-			STX		Utport
-			JSR		Delay1s
-			;PULX	bevara tidigare x-värde ifall det har används någon annanstans 
-			PULA
-			RTS
+			      STX		Utport
+			      JSR		Delay1s
+			      ;PULX	bevara tidigare x-värde ifall det har används någon annanstans 
+			      PULA
+			      RTS
 
 
 	
