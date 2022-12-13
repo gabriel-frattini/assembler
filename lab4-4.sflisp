@@ -1,42 +1,90 @@
-Inport	EQU	$FC
-Utport	EQU	$FB
-DelayC1	EQU	$5		;Dessa konstanter styr hur lång fördröjning Delay1s orsakar.
-DelayC2	EQU	$2		;Ändra dem eventuellt i labbet så att fördröjnigen blir rimligt lång.
-
-	ORG	$FF
-	FCB	$20
-
-	ORG	$20
-
-Main:	;JSR 	ReadAscii
-	JSR	BlinkLight
-	BRA	Main
+; This program reads an ascii value from address FC and
+; translates the alphabetical character to morse code.
 
 
-ReadAscii:
-	ANDCC 	#$00
-	LDA 	Inport
-	RORA
-	BCC 	ReadAscii
-	RTS
+Inport        EQU	    $FC
+Utport	      EQU	    $FB
+DelayC1	      EQU	    $5		          
+DelayC2	      EQU	    $2	
 
+              ORG		  $FF
+            
+              FCB		  Main
+              ORG		  $20
+
+; This function is called when an invalid character is entered. 
+; It blinks the output port with a pattern of 10101010 
+; (which doesn't correspond to any Morse code character) to indicate that an error has occurred.
+
+Error:		    LDA		  #$AB
+              STA		  Utport
+              JSR		  Delay1s
+
+; Main sets up the stack and calls the ReadAscii function to read in a character from the input port. 
+; It then checks if the character is valid (i.e. in the range 'A' to 'Z') and, 
+; if it is, it looks up the corresponding Morse code in the MorseCode table and stores it in the Count variable. 
+; It then calls the BlinkLight function to blink the output port using the Morse code pattern.
+
+Main:		      LDSP	  #$20
+              LDA		  #$00		
+              STA		  Utport
+
+reset:		    JSR		  ReadAscii
+			        SUBA	  #$41
+
+              BMI		  Error			
+              CMPA	  #$1A
+              BPL		  Error		
+              LSLA		
+              PSHA
+              LDX		  #MorseCode
+              LDA		  A,X
+              STA		  Count
+              PULA
+              INCA
+              LDA		  A,X
+			
+CountNotZero:	JSR		  BlinkLight
+              LSLA
+              DEC		  Count
+              BNE		  CountNotZero	
+			        BRA		  Main
+
+
+; This function reads in a single character from the input port and returns it in the accumulator (A) register. 
+; It waits for the input port to be set to 1 before returning, 
+; to ensure that a complete character has been received.
+
+ReadAscii:	  LDA		  Inport
+			        LSRA				
+			        BCC		ReadAscii	
+			        RTS	
+
+BlinkLight:	  PSHA
+			        LDX		#$FF
+			        STX		Utport
+			        LSLA			
+			        BCS		BL_4s	
+
+BL_1s:		    JSR		Delay1s
+			        JMP		BL_retur
+
+BL_4s:		    LDA	  #$04
+BL_decr:		  JSR	  Delay1s
+              DECA	
+              BNE		BL_decr	
+              JMP		BL_retur 
+
+BL_retur:		  LDX		#00
+              STX		Utport
+              JSR		Delay1s
+              PULA
+              RTS
 
 
 	
-BlinkLight:
-	PSHA
-	LDX  	#$FF
-	STX  	Utport
-	ROLA
-	BNE	Delay1s_loop2
-	BCS	Delay1s
-	LDX 	#$00
-	STX 	Utport
-	RTS
-	
-	
-; Orsakar en fördröjning på ungefär 1s i simulatorn (vid snabb exekveringshastighet)
-; Ändrar inga register
+; Orsakar en f�rdr�jning p� ungef�r 1s i simulatorn (vid snabb exekveringshastighet)
+; �ndrar inga register
 Delay1s:
 	PSHA
 	PSHX
