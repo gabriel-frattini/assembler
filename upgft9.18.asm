@@ -1,4 +1,4 @@
-; här är min kod
+; This program reads an 8 bit number and displays numbers 1-9 on a 7 segment display.
 ;
 DIPSWITCH:      EQU     $FC
 SEGMENT7:       EQU     $FB
