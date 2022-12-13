@@ -1,4 +1,4 @@
-; hej här är min kod
+; This program emulates a running light in a bargraph by ligthing one light at a time.
 ;
 LED:        EQU       $FB
             ORG       $20
